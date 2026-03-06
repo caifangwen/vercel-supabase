@@ -1,10 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase";
 import type { Category, Product } from "./types";
 
 const PAGE_SIZE = 24;
 
 export async function getCategories(): Promise<Category[]> {
-  const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
     .select("id, name, slug, description, created_at")
@@ -14,7 +13,6 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
     .select("id, name, slug, description, created_at")
@@ -30,7 +28,6 @@ export async function getProducts(options: {
   page?: number;
   featured?: boolean;
 }): Promise<{ products: Product[]; total: number }> {
-  const supabase = await createClient();
   const { categorySlug, search, page = 1, featured } = options;
 
   let categoryId: string | null = null;
@@ -64,7 +61,6 @@ export async function getProducts(options: {
 }
 
 export async function getProductBySlug(categorySlug: string, productSlug: string): Promise<Product | null> {
-  const supabase = await createClient();
   const { data: cat } = await supabase.from("categories").select("id").eq("slug", categorySlug).single();
   if (!cat) return null;
 
@@ -88,7 +84,6 @@ export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
 }
 
 export async function getRelatedProducts(categoryId: string, excludeProductId: string, limit = 4): Promise<Product[]> {
-  const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
     .select("*, category:categories(slug, name)")
@@ -106,7 +101,6 @@ export async function getRelatedProducts(categoryId: string, excludeProductId: s
 
 /** For sitemap: fetch all category slugs and product slugs (category + product). */
 export async function getAllProductPaths(): Promise<{ category: string; slug: string }[]> {
-  const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
     .select("slug, category:categories(slug)")
